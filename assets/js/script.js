@@ -2,7 +2,8 @@
 /*******************************************************************************
  * Global variables
  ******************************************************************************/
-var rows = []
+var rowEles = []
+var rowValues =[];
 
 // makes it so the time looks good from the first second we load
 updateTime()
@@ -21,7 +22,7 @@ for(var i = 0; i < 24; i++){
  * A function to update our time header
  */
 function updateTime(){
-    $("#currentDay").text("The current time is: " + moment().format("dddd, MMMM do H:mm:ss"))
+    $("#currentDay").text("The current time is: " + moment().format("dddd, MMMM Do H:mm:ss"))
 }
 
 /**
@@ -29,13 +30,11 @@ function updateTime(){
  * @param {number} time the hour we are adding
  */
 function addRow(time){
-    var row = $("<div></div>");
-    rows.push(row); // add it to our global variable
+    var row = $("<tr></tr>");
+    rowEles.push(row); // add it to our global variable
     
-    // it's a row
-    row.addClass("row")
-    // white text on a colored background
-    row.addClass("text-light");
+    // basic classes they all have
+    row.addClass("row text-light");
 
     // reference for current hour
     var currHour = moment().hour();
@@ -53,7 +52,20 @@ function addRow(time){
         row.addClass("bg-primary")
     }
 
+    // the time element on the left
+    var timeEle = $("<div>" + time + "H</div>")
+    timeEle.addClass("d-flex justify-content-start align-items-center col-3");
+    row.append(timeEle);
+
+    var taskEle = $(" <textarea id=\"exampleFormControlTextarea1\" rows=\"3\"></textarea>");
+    taskEle.addClass("d-flex justify-content-center align-items-center col-6 bg-light");
+    row.append(taskEle);
     
+    taskEle.val("Click here to edit your task");
+
+    var saveEle = $("<div>💾</div>");
+    saveEle.addClass("d-flex justify-content-end align-items-center col-3");
+    row.append(saveEle);
 
     $("#time-block-container").append(row);
 }
