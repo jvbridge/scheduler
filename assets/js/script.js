@@ -2,8 +2,16 @@
 /*******************************************************************************
  * Global variables
  ******************************************************************************/
+// list of jquery objects referring to the rows
 var rowEles = []
+
+var localStorageKey = "schedule"
+// local storage values
 var rowValues =[];
+
+/*******************************************************************************
+ * Initialization
+ ******************************************************************************/
 
 // makes it so the time looks good from the first second we load
 updateTime()
@@ -15,8 +23,18 @@ setInterval(() =>{
 
 // add on the rows for the planner
 for(var i = 0; i < 24; i++){
+    // local storage
+    rowValues.push("No Event scheduled");
     addRow(i);
 }
+
+// get local storage if it exists
+retrieve();
+
+
+/*******************************************************************************
+ * Functions
+ ******************************************************************************/
 
 /**
  * A function to update our time header
@@ -30,11 +48,13 @@ function updateTime(){
  * @param {number} time the hour we are adding
  */
 function addRow(time){
-    var row = $("<tr></tr>");
+    var row = $("<div></div>");
     rowEles.push(row); // add it to our global variable
     
     // basic classes they all have
     row.addClass("row text-light");
+
+    row.prop("id", "Row-" + time);
 
     // reference for current hour
     var currHour = moment().hour();
@@ -57,15 +77,57 @@ function addRow(time){
     timeEle.addClass("d-flex justify-content-start align-items-center col-3");
     row.append(timeEle);
 
-    var taskEle = $(" <textarea id=\"exampleFormControlTextarea1\" rows=\"3\"></textarea>");
-    taskEle.addClass("d-flex justify-content-center align-items-center col-6 bg-light");
+    var taskEle = $("<textarea rows='3'></textarea>");
+    taskEle.prop("id", "Row-" + time + "-task");
+    taskEle.addClass("d-flex justify-content-center align-items-center col-8 bg-light");
     row.append(taskEle);
     
+    // TODO set up correctly
     taskEle.val("Click here to edit your task");
 
-    var saveEle = $("<div>💾</div>");
-    saveEle.addClass("d-flex justify-content-end align-items-center col-3");
+    var saveEle = $("<div></div>");
+    saveEle.addClass("d-flex justify-content-end align-items-center col-1");
+    var saveButton = $("<button class='btn'>💾</button>");
+    // save button click
+    saveButton.on("click", () =>{
+        rowValues[time] = taskEle.val();
+        store();
+    });
+    saveEle.append(saveButton);
     row.append(saveEle);
 
     $("#time-block-container").append(row);
+}
+
+/**
+ * Sends information to local storage
+ */
+function store(){
+    localStorage.setItem(localStorageKey, JSON.stringify(rowValues));
+}
+
+/**
+ * Retrieves information from local stroage and sends it to appropriate 
+ * variables. If no local storage exists it creates it
+ */
+function retrieve(){
+    console.log("retrieving...");
+    var eventsStr = localStorage.getItem(localStorageKey);
+    // if we don't have an events string we need to store it for later use.
+    if (!eventsStr){
+        store();
+    } else{
+        rowValues = JSON.parse(eventsStr);
+    }
+    console.log("retrieved:" + eventsStr);
+    updateRows();
+}
+
+// updates all the rows on the DOM
+function updateRows(){
+    console.log("updating rows:");
+    for(var i = 0; i < rowValues.length; i++){
+        console.log("Updating row " + i + " with value: " + rowValues[i]);
+        $("#Row-" + i + "-task").val(rowValues[i]);
+    }
 }
